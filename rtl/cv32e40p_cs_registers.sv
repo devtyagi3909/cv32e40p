@@ -215,6 +215,8 @@ module cv32e40p_cs_registers
   Status_t mstatus_q, mstatus_n;
   logic mstatus_we_int;
   FS_t mstatus_fs_q, mstatus_fs_n;
+  FS_t mstatus_fs_fwd;
+  assign mstatus_fs_fwd = (FPU == 1 && ZFINX == 0 && (fregs_we_i || fflags_we_i)) ? FS_DIRTY : mstatus_fs_q;
   logic [5:0] mcause_q, mcause_n;
   logic [5:0] ucause_q, ucause_n;
   logic [23:0] mtvec_n, mtvec_q;
@@ -465,11 +467,11 @@ module cv32e40p_cs_registers
         // mstatus: always M-mode, contains IE bit
         CSR_MSTATUS:
         csr_rdata_int = {
-          (FPU == 1 && ZFINX == 0) ? (mstatus_fs_q == FS_DIRTY ? 1'b1 : 1'b0) : 1'b0,
+          (FPU == 1 && ZFINX == 0) ? (mstatus_fs_fwd == FS_DIRTY ? 1'b1 : 1'b0) : 1'b0,
           13'b0,
           mstatus_q.mprv,
           2'b0,
-          (FPU == 1 && ZFINX == 0) ? mstatus_fs_q : FS_OFF,
+          (FPU == 1 && ZFINX == 0) ? mstatus_fs_fwd : FS_OFF,
           mstatus_q.mpp,
           3'b0,
           mstatus_q.mpie,
