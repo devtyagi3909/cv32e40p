@@ -216,12 +216,14 @@ module cv32e40p_cs_registers
   logic mstatus_we_int;
   FS_t mstatus_fs_q, mstatus_fs_n;
   FS_t mstatus_fs_fwd;
-  assign mstatus_fs_fwd = (FPU == 1 && ZFINX == 0 && (fregs_we_i || fflags_we_i)) ? FS_DIRTY : mstatus_fs_q;
   logic [5:0] mcause_q, mcause_n;
   logic [5:0] ucause_q, ucause_n;
   logic [23:0] mtvec_n, mtvec_q;
   logic [23:0] utvec_n, utvec_q;
   logic [1:0] mtvec_mode_n, mtvec_mode_q;
+
+  // Forward FS_DIRTY if an older in-flight instruction (e.g. flw in WB) is writing to FPU
+  assign mstatus_fs_fwd = (FPU == 1 && ZFINX == 0 && (fregs_we_i || fflags_we_i)) ? FS_DIRTY : mstatus_fs_q;
   logic [1:0] utvec_mode_n, utvec_mode_q;
 
   logic [31:0] mip;  // Bits are masked according to IRQ_MASK
